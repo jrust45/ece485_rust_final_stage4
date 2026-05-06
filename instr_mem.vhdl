@@ -24,10 +24,6 @@ architecture Behavioral of instr_mem is
         8 => x"FF9FF06F", -- done: j done             [jump -4; note: assumes PC is incremented by 4]       
                           --                        1 1111111100 1 11111111 00000 1101111                                      
         
-        -- Commented Out from Task 3
-        --1 => x"00429293", -- subi x5, x5, 4         000000000100 00101 001 00101 0010011
-        --2 => x"FFC29293", -- subi x5, x5, -4        111111111100 00101 001 00101 0010011  
-        
         others => (others => '0')   
     );
 begin
