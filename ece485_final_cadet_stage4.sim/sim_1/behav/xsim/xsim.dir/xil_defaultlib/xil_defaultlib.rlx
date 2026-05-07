@@ -1,0 +1,17 @@
+0.7
+2020.2
+Nov  8 2024
+22:36:57
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/alu.vhdl,1777989158,vhdl,,,,alu,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/alu_control.vhdl,1777989158,vhdl,,,,alu_control,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/control_unit.vhdl,1777989158,vhdl,,,,control_unit,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/data_mem.vhdl,1777989158,vhdl,,,,data_mem,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/forwarding_unit.vhdl,1778161212,vhdl,,,,forwarding_unit,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/hazard_detection_unit.vhdl,1778161442,vhdl,,,,hazard_detection_unit,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/immediate_generator.vhdl,1777989158,vhdl,,,,immediate_generator,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/instr_mem.vhdl,1778166609,vhdl,,,,instr_mem,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/pc.vhdl,1777989158,vhdl,,,,pc_live,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/pipeline_registers.vhdl,1778163004,vhdl,,,,pipeline_registers,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/reg_file.vhdl,1777989158,vhdl,,,,reg_file,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/riscv_pipeline.vhdl,1778163034,vhdl,,,,riscv_pipeline,,,,,,,,
+C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/tb_riscv_pipeline.vhdl,1777989158,vhdl,,,,tb_riscv_pipeline,,,,,,,,

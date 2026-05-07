@@ -5,11 +5,13 @@ use IEEE.NUMERIC_STD.ALL;
 entity forwarding_unit is
     Port (
         ex_mem_reg_write : in STD_LOGIC;
+        mem_wb_reg_write : in STD_LOGIC; -- also added
         mem_wb_mem_read  : in STD_LOGIC;
         mem_wb_load_addr : in STD_LOGIC;
         ex_mem_rd        : in STD_LOGIC_VECTOR(4 downto 0);
         mem_wb_rd        : in STD_LOGIC_VECTOR(4 downto 0);
         id_ex_rs1        : in STD_LOGIC_VECTOR(4 downto 0);
+        id_ex_rs2        : in STD_LOGIC_VECTOR(4 downto 0); --added but might not need
         -- need any other input or output registers?
         mux_select_A     : out STD_LOGIC_VECTOR(1 downto 0)
     );
@@ -18,7 +20,7 @@ end forwarding_unit;
 architecture Behavioral of forwarding_unit is
 
 begin
-    process(ex_mem_reg_write, mem_wb_mem_read, mem_wb_load_addr, ex_mem_rd, mem_wb_rd, id_ex_rs1 -- any others?)
+    process(ex_mem_reg_write, mem_wb_reg_write, mem_wb_mem_read, mem_wb_load_addr, ex_mem_rd, mem_wb_rd, id_ex_rs1, id_ex_rs2) -- any others?)
 begin
     -- mux to select alu input A (with forwarding)
     --    mux_select_A
@@ -30,13 +32,22 @@ begin
   -- Default: no forwarding
   mux_select_A <= "00";
 
-  -- EX hazard
-  if <what control signals and opcodes?> then  -- alu to register case
+  -- EX hazard (ALU/reg-write)
+  if (ex_mem_reg_write = '1' and ex_mem_rd = id_ex_rs1 and ex_mem_rd /= "00000") then  -- alu to register case
     mux_select_A <= "01";
-  elsif <what control signals and opcodes?> then  -- memory to register case
-    mux_select_A <= "10";
-  elsif <what control signals and opcodes?> then  -- load address to register case
+    
+  -- MEM load_addr (la -> next use)
+  elsif (mem_wb_load_addr = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then  -- memory to register case
     mux_select_A <= "11";
+    
+  -- MEM lw (lw result forwarded from data memory)
+  elsif (mem_wb_mem_read = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then  -- load address to register case
+    mux_select_A <= "10";
+    
+  --MEM ALU/reg-write 
+  elsif (mem_wb_reg_write = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then
+    mux_select_A <= "10";
+    
   end if;
     end process;
 end Behavioral;

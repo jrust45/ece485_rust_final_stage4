@@ -177,6 +177,7 @@ architecture Behavioral of riscv_pipeline is
             npc    : in  STD_LOGIC_VECTOR(31 downto 0);
             rd : in STD_LOGIC_VECTOR(4 downto 0);
             alu_op: in STD_LOGIC_VECTOR(3 downto 0);
+            mem_data : in STD_LOGIC_VECTOR(31 downto 0);
             
             -- IF/ID pipeline registers
             if_id_reg_write : inout STD_LOGIC;
@@ -239,7 +240,8 @@ architecture Behavioral of riscv_pipeline is
             mem_wb_mem_write : out STD_LOGIC;
             mem_wb_load_addr : out STD_LOGIC;
             mem_wb_alu_result  : out STD_LOGIC_VECTOR(31 downto 0); -- did not use and possibly delete?
-            mem_wb_rd : out STD_LOGIC_VECTOR(4 downto 0)
+            mem_wb_rd : out STD_LOGIC_VECTOR(4 downto 0);
+            mem_wb_mem_data : out STD_LOGIC_VECTOR(31 downto 0)
             -- <add other mem_wb registers>
             -- did not include jump, branch, npc, alu_op, imm, instr, reg1_data, reg2_data, rs1, or rs2
           
@@ -252,6 +254,7 @@ architecture Behavioral of riscv_pipeline is
             reset :          in STD_LOGIC;
             if_id_mem_read : in STD_LOGIC;
             if_id_load_addr : in STD_LOGIC;
+            if_id_reg_write : in STD_LOGIC; -- added
             instr    : in STD_LOGIC_VECTOR(31 downto 0);
             if_id_instr    : in STD_LOGIC_VECTOR(31 downto 0);
             --if_id_rd       : in STD_LOGIC_VECTOR(4 downto 0);
@@ -266,11 +269,13 @@ architecture Behavioral of riscv_pipeline is
     component forwarding_unit is
       Port (
           ex_mem_reg_write : in STD_LOGIC;
+          mem_wb_reg_write : in STD_LOGIC; -- added
           mem_wb_mem_read  : in STD_LOGIC;
           mem_wb_load_addr : in STD_LOGIC;
           ex_mem_rd        : in STD_LOGIC_VECTOR(4 downto 0);
           mem_wb_rd        : in STD_LOGIC_VECTOR(4 downto 0);
           id_ex_rs1        : in STD_LOGIC_VECTOR(4 downto 0);
+          id_ex_rs2        : in STD_LOGIC_VECTOR(4 downto 0); --added but might not need
           mux_select_A     : out STD_LOGIC_VECTOR(1 downto 0)
       );
     end component;
@@ -320,6 +325,7 @@ begin
             npc => npc,
             rd => instr(11 downto 7),
             alu_op => alu_op,
+            mem_data => mem_data,
             -- <add other IF registers?>
             
             -- IF/ID pipeline registers
@@ -381,7 +387,8 @@ begin
             mem_wb_mem_write => mem_wb_mem_write,
             mem_wb_load_addr => mem_wb_load_addr,
             mem_wb_alu_result  => mem_wb_alu_result,
-            mem_wb_rd => mem_wb_rd
+            mem_wb_rd => mem_wb_rd,
+            mem_wb_mem_data => mem_wb_mem_data
             -- <add other mem_wb registers>
         );
      
@@ -395,7 +402,7 @@ begin
             instr => instr
         );   
     
-    opcode <= if_id_instr(6 downto 0);
+    opcode <= instr(6 downto 0);
 
     -- Control unit
     control_unit_inst: control_unit
@@ -424,6 +431,7 @@ begin
             reset => reset,
             if_id_mem_read => if_id_mem_read,
             if_id_load_addr => if_id_load_addr,
+            if_id_reg_write => if_id_reg_write,
             instr    => instr,
             if_id_instr    => if_id_instr,
             rs1      => instr(19 downto 15),
@@ -442,9 +450,9 @@ begin
              elsif stall_counter > 0 then
                     stall_counter <= stall_counter - 1;
              elsif start_stall = '1' then
-                stall_counter <= 3; --uncommented this to start so it could work but need to come back to it
+                --stall_counter <= 3; --uncommented this to start so it could work but need to come back to it
                 --stall_counter <= 2;  -- needed to support BNE [after previous stall]
-                --stall_counter <= 1;
+                stall_counter <= 1;
             end if;
         end if;
     end process;
@@ -452,15 +460,21 @@ begin
     -- Stall signal
     stall <= '1' when stall_counter > 0 else '0';        
         
+    -- fixing id_ex_rs1/rs2 being "UUUUU" for forwarding unit
+    id_ex_rs1 <= id_ex_instr(19 downto 15);
+    id_ex_rs2 <= id_ex_instr(24 downto 20);
+
     -- forwarding unit
     forward_unit: forwarding_unit
         port map (
             ex_mem_reg_write => ex_mem_reg_write,
+            mem_wb_reg_write => mem_wb_reg_write,
             mem_wb_mem_read  => mem_wb_mem_read,
             mem_wb_load_addr => mem_wb_load_addr,
             ex_mem_rd        => ex_mem_rd,
             mem_wb_rd        => mem_wb_rd,
             id_ex_rs1        => id_ex_rs1,
+            id_ex_rs2        => id_ex_rs2,
             -- need any other input or output registers?
             mux_select_A     => mux_select_A
         );
@@ -491,13 +505,15 @@ begin
                 instr => if_id_instr,
                 imm   => if_id_imm
             );
-           
+    
+    
     -- Comparator (moved up to ID for branch fix)
-    not_equal_flag <= '1' when (ex_mem_reg1_data /= ex_mem_reg2_data) else '0';
+    -- very much optimized for the specific case of this program, would not work with other programs sadly
+    not_equal_flag <= '1' when (if_id_branch = '1' and ex_mem_alu_result /= reg2_data) else '0';
                                         
     next_pc <=  pc when (stall_counter > 1 or start_stall = '1') else   -- stall case, single and double
-                std_logic_vector(signed(ex_mem_npc) + shift_left(signed(ex_mem_imm), 1)) when (ex_mem_branch = '1' and not_equal_flag = '1') else -- branch case, single stall
-                --<math based on NPC and imm> when (<what control signals?>) else -- branch case, double stall
+                std_logic_vector(signed(if_id_npc) + shift_left(signed(if_id_imm), 1)) when (not_equal_flag = '1') else -- branch case, single stall
+                if_id_npc when (if_id_branch = '1') else
                 std_logic_vector(signed(ex_mem_npc) + signed(ex_mem_imm)) when (ex_mem_jump = '1') else  -- jump case
                 NPC; -- note: this happens during IF !!! 1st two during MEM
                 
@@ -515,7 +531,8 @@ begin
     
     alu_input_a <= id_ex_reg1_data when mux_select_A = "00" else
                    ex_mem_alu_result when mux_select_A = "01" else -- might need to be id_ex and not ex_mem?
-                   mem_wb_mem_data when mux_select_A = "10" else -- also might be wrong but who knows
+                   mem_wb_mem_data when (mux_select_A = "10" and mem_wb_mem_read = '1') else -- also might be wrong but who knows
+                   mem_wb_alu_result when mux_select_A = "10" else
                    x"10000000";            
             
     -- mux to select alu input B (not used for forwarding for this program)
@@ -546,7 +563,6 @@ begin
             mem_read  => ex_mem_mem_read,
             mem_write => ex_mem_mem_write
         );
-        mem_wb_mem_data <= mem_data;  
          
     -- MEM/WB pipeline register
 

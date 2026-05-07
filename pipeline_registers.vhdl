@@ -22,6 +22,7 @@ entity pipeline_registers is
         npc    : in  STD_LOGIC_VECTOR(31 downto 0);
         rd : in STD_LOGIC_VECTOR(4 downto 0);
         alu_op: in STD_LOGIC_VECTOR(3 downto 0);
+        mem_data : in STD_LOGIC_VECTOR(31 downto 0);
         
         -- IF/ID pipeline registers
         if_id_reg_write : inout STD_LOGIC;
@@ -84,8 +85,9 @@ entity pipeline_registers is
         mem_wb_mem_write : out STD_LOGIC;
         mem_wb_load_addr : out STD_LOGIC;
         mem_wb_alu_result  : out STD_LOGIC_VECTOR(31 downto 0); -- did not use and possibly delete?
-        mem_wb_rd : out STD_LOGIC_VECTOR(4 downto 0)
+        mem_wb_rd : out STD_LOGIC_VECTOR(4 downto 0);
         -- <add other mem_wb registers>
+        mem_wb_mem_data : out STD_LOGIC_VECTOR(31 downto 0)
         -- did not include jump, branch, npc, alu_op, imm, instr, reg1_data, reg2_data, rs1, rs2, or rd
       
     );
@@ -135,8 +137,8 @@ begin
             ex_mem_imm <= (others => '0');
             ex_mem_rd <= (others => '0');
 
-        elsif rising_edge(clk) then
-            if (stall_counter > 1 or start_stall = '1') then  -- if stall, then insert a NOP
+        elsif rising_edge(clk) then                  -- basically acts as a NOP Stall
+            if (stall_counter > 1 or start_stall = '1' or if_id_branch = '1') then  -- if stall, then insert a NOP
                 if_id_reg_write <= '0';
                 if_id_alu_src <= '0';
                 if_id_mem_read <= '0';
@@ -209,6 +211,7 @@ begin
             mem_wb_load_addr <= ex_mem_load_addr;
             mem_wb_alu_result <= ex_mem_alu_result;
             mem_wb_rd <= ex_mem_rd;
+            mem_wb_mem_data <= mem_data;
 
         end if;
     end process;

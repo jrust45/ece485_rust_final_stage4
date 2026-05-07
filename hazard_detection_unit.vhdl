@@ -7,6 +7,7 @@ entity hazard_detection_unit is
         reset :          in STD_LOGIC;
         if_id_mem_read : in STD_LOGIC;                      -- previous instr mem read
         if_id_load_addr : in STD_LOGIC;                     -- previous instr load addr
+        if_id_reg_write : in STD_LOGIC;     -- added for previous instr writes to a reg
         instr    : in STD_LOGIC_VECTOR(31 downto 0);        -- current  instr
         if_id_instr    : in STD_LOGIC_VECTOR(31 downto 0);  -- previous instr
         --if_id_rd       : in STD_LOGIC_VECTOR(4 downto 0);   -- previous instr destination register
@@ -29,7 +30,7 @@ begin
     if_id_opcode <= if_id_instr(6 downto 0);
     if_id_rd_sig <= if_id_instr(11 downto 7);
     
-    process(if_id_mem_read, if_id_load_addr, if_id_rd_sig, rs1, rs2, if_id_opcode, opcode, stall_counter, reset) --ignored for rn -- any others?)
+    process(if_id_mem_read, if_id_load_addr, if_id_reg_write, if_id_rd_sig, rs1, rs2, if_id_opcode, opcode, stall_counter, reset) --ignored for rn -- any others?)
     begin      
         if (reset = '1') then
             start_stall <= '0';
@@ -38,10 +39,12 @@ begin
         elsif (stall_counter > 0) then
             start_stall <= '0';
             
-        elsif ( (if_id_rd_sig = rs1) and (if_id_rd_sig /= "00000") ) then
+        -- Load hazard (so if instr in IF/ID is lw or la and its destination matches rs1 or rs2 of current instr)
+        elsif ( (if_id_mem_read = '1' or if_id_load_addr = '1') and (if_id_rd_sig = rs1 or if_id_rd_sig = rs2) and (if_id_rd_sig /= "00000") ) then
             start_stall <= '1';
             
-        elsif ( (if_id_opcode = "1100011") or (if_id_opcode = "1101111") ) then
+        -- branch hazard
+        elsif ( opcode = "1100011" and if_id_reg_write = '1' and if_id_rd_sig /= "00000" and (if_id_rd_sig = rs1 or if_id_rd_sig = rs2) ) then
             start_stall <= '1';
            
         -- stall cases for branch or jump, needing time to calulate branch address, etc
