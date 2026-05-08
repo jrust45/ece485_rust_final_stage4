@@ -1,0 +1,6 @@
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/forwarding_unit.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'forwarding_unit'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/instr_mem.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'instr_mem'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/riscv_pipeline.vhdl" into library xil_defaultlib
+INFO: [VRFC 10-3107] analyzing entity 'riscv_pipeline'

@@ -32,19 +32,19 @@ begin
   -- Default: no forwarding
   mux_select_A <= "00";
 
-  -- EX hazard (ALU/reg-write)
+  -- EX hazard (forwards ALU result back into the ALU)
   if (ex_mem_reg_write = '1' and ex_mem_rd = id_ex_rs1 and ex_mem_rd /= "00000") then  -- alu to register case
     mux_select_A <= "01";
     
-  -- MEM load_addr (la -> next use)
+  -- load_addr (la -> next use; forwards the constant)
   elsif (mem_wb_load_addr = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then  -- memory to register case
     mux_select_A <= "11";
     
-  -- MEM lw (lw result forwarded from data memory)
+  -- MEM lw (data loaded by lw is now forwarded from data memory)
   elsif (mem_wb_mem_read = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then  -- load address to register case
     mux_select_A <= "10";
     
-  --MEM ALU/reg-write 
+  --MEM ALU (ALU from two stages ago forwarded back to ALU) 
   elsif (mem_wb_reg_write = '1' and mem_wb_rd = id_ex_rs1 and mem_wb_rd /= "00000") then
     mux_select_A <= "10";
     

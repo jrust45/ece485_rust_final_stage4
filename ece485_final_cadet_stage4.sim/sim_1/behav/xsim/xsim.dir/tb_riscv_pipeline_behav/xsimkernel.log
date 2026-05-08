@@ -1,4 +1,7 @@
-Running: xsim.dir/tb_riscv_pipeline_behav/xsimk.exe -wdb C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/tb_riscv_pipeline_behav.wcfg.wdb -simmode gui -simrunnum 0 -socket 60836
+Running: xsim.dir/tb_riscv_pipeline_behav/xsimk.exe -wdb C:/Users/John.Rust/Desktop/ECE_485_Final_Project/ece485_rust_final_stage4/tb_riscv_pipeline_behav.wcfg.wdb -simmode gui -simrunnum 0 -socket 53376
 Design successfully loaded
-Design Loading Memory Usage: 27556 KB (Peak: 27556 KB)
-Design Loading CPU Usage: 327 ms
+Design Loading Memory Usage: 27584 KB (Peak: 27584 KB)
+Design Loading CPU Usage: 453 ms
+Simulation completed
+Simulation Memory Usage: 28768 KB (Peak: 28768 KB)
+Simulation CPU Usage: 484 ms

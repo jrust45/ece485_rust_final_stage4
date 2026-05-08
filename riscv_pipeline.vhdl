@@ -513,7 +513,7 @@ begin
                                         
     next_pc <=  pc when (stall_counter > 1 or start_stall = '1') else   -- stall case, single and double
                 std_logic_vector(signed(if_id_npc) + shift_left(signed(if_id_imm), 1)) when (not_equal_flag = '1') else -- branch case, single stall
-                if_id_npc when (if_id_branch = '1') else
+                if_id_npc when (if_id_branch = '1') else -- branch not taken but hold clk cycle
                 std_logic_vector(signed(ex_mem_npc) + signed(ex_mem_imm)) when (ex_mem_jump = '1') else  -- jump case
                 NPC; -- note: this happens during IF !!! 1st two during MEM
                 
@@ -529,10 +529,15 @@ begin
     --       10 forward from memory output
     --       11 forward from custom LoadAddr
     
+                   -- normal reg output
     alu_input_a <= id_ex_reg1_data when mux_select_A = "00" else
-                   ex_mem_alu_result when mux_select_A = "01" else -- might need to be id_ex and not ex_mem?
-                   mem_wb_mem_data when (mux_select_A = "10" and mem_wb_mem_read = '1') else -- also might be wrong but who knows
+                   -- ALU result from EX/MEM register (one step behind)
+                   ex_mem_alu_result when mux_select_A = "01" else 
+                   -- data from memory load output (two steps behind)
+                   mem_wb_mem_data when (mux_select_A = "10" and mem_wb_mem_read = '1') else 
+                   -- ALU result (two steps behind)
                    mem_wb_alu_result when mux_select_A = "10" else
+                   -- default la case base address (aka mux_select_A = "11")
                    x"10000000";            
             
     -- mux to select alu input B (not used for forwarding for this program)
